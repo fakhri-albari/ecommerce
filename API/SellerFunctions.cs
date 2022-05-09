@@ -15,7 +15,6 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace API
 {
@@ -37,6 +36,13 @@ namespace API
                     cfg.CreateMap<SellerDTO, Seller>();
 
                     cfg.CreateMap<UpdateSellerDTO, Seller>();
+
+                    cfg.CreateMap<OrderStoreDTO, OrderStoreBase>();
+
+                    //cfg.CreateMap<IEnumerable<OrderStoreProductDTO>, IEnumerable<OrderStoreProduct>>();
+
+                    cfg.CreateMap<OrderStoreDetailStatusDTO, OrderStoreDetailStatus>();
+
                 });
             _mapper = config.CreateMapper();
         }
@@ -86,6 +92,22 @@ namespace API
             Seller seller = _mapper.Map<Seller>(updateStoreDto);
             var sellerSvc = new SellerServices(new Repositories.SellerRepository(_client));
             var result = await sellerSvc.UpdateStore(seller);
+            return new OkObjectResult(result);
+        }
+
+        [FunctionName("CreateOrderStore")]
+        [OpenApiOperation(operationId: "CreateOrderStore", tags: new[] { "Seller" })]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(OrderStoreDTO), Description = "Order Store data want to be created", Required = true)]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(OrderStoreBase), Description = "The OK response")]
+        public async Task<IActionResult> CreateOrderStore(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "store/order")] HttpRequest req,
+            ILogger log)
+        {
+            string requestBody = new StreamReader(req.Body).ReadToEnd();
+            OrderStoreDTO orderStoreDTO = JsonConvert.DeserializeObject<OrderStoreDTO>(requestBody);
+            OrderStoreBase seller = _mapper.Map<OrderStoreBase>(orderStoreDTO);
+            var sellerSvc = new OrderStoreServices(new Repositories.OrderStoreRepository(_client));
+            var result = await sellerSvc.CreateOrderStore(seller);
             return new OkObjectResult(result);
         }
     }

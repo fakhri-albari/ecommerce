@@ -9,11 +9,36 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using System.Net;
+using API.DTO.Order;
+using AutoMapper;
+using Microsoft.Azure.Cosmos;
+using DAL.Models;
+using DAL;
+using BLL;
 
 namespace API
 {
-    public static class OrderFunctions
+    public class OrderFunctions
     {
+        private readonly IMapper _mapper;
+        private readonly CosmosClient _client;
+
+        public OrderFunctions(CosmosClient client)
+        {
+            _client = client;
+
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<OrderDTO, Order>();
+                cfg.CreateMap<OrderPaymentDTO, OrderPayment>();
+                cfg.CreateMap<UpdateOrderPaymentDTO, OrderPayment>();
+                cfg.CreateMap<OrderStoreDTO, OrderStore>();
+                cfg.CreateMap<OrderProductDTO, OrderProduct>();
+                cfg.CreateMap<PaymentDetailStatus ,OrderPaymentDetailStatus >();
+            });
+            _mapper = config.CreateMapper();
+        }
+
         [FunctionName("CreateOrder")]
         [OpenApiOperation(operationId: "CreateOrder", tags: new[] { "Order" })]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(OrderDTO), Description = "Order want to be created", Required = true)]
@@ -27,6 +52,38 @@ namespace API
             Order order = _mapper.Map<Order>(orderDTO);
             var orderSvc = new OrderServices(new Repositories.OrderRepository(_client));
             var result = await orderSvc.CreateOrder(order);
+            log.LogWarning(" ");
+            log.LogWarning("=== Order Created ===");
+            log.LogWarning($"ID: {result.Id}");
+            log.LogWarning(" ");
+            return new OkObjectResult(result);
+        }
+
+        [FunctionName("UpdateOrderPayment")]
+        [OpenApiOperation(operationId: "UpdateOrderPayment", tags: new[] { "Order" })]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UpdateOrderPaymentDTO), Description = "Order payment data want to be updated", Required = true)]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(Order), Description = "The OK response")]
+        public async Task<IActionResult> UpdateOrderPayment(
+            [HttpTrigger(AuthorizationLevel.Function, "put", Route = "order/payment")] HttpRequest req,
+            ILogger log)
+        {
+            string requestBody = new StreamReader(req.Body).ReadToEnd();
+            UpdateOrderPaymentDTO updateOrderPaymentDTO = JsonConvert.DeserializeObject<UpdateOrderPaymentDTO>(requestBody);
+            OrderPayment orderPayment = new OrderPayment
+            {
+                method = updateOrderPaymentDTO.method,
+                status = updateOrderPaymentDTO.status,
+                id = updateOrderPaymentDTO.id,
+                total = updateOrderPaymentDTO.total,
+                detailStatus = _mapper.Map<OrderPaymentDetailStatus>(updateOrderPaymentDTO.detailStatus)
+            };
+            var orderSvc = new OrderServices(new Repositories.OrderRepository(_client));
+            var result = await orderSvc.UpdateOrderPayment(orderPayment, updateOrderPaymentDTO.orderId);
+            log.LogWarning(" ");
+            log.LogWarning("=== Order Payment Updated ===");
+            log.LogWarning($"Order ID      : {result.Id}");
+            log.LogWarning($"Payment Status: {result.payment.status}");
+            log.LogWarning(" ");
             return new OkObjectResult(result);
         }
     }

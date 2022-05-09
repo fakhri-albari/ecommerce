@@ -4,32 +4,24 @@ using System.Text;
 
 namespace API.DTO.Order
 {
-    public class OrderPaymentDetailStatusDTO
-    {
-        public DateTime created { get; set; }
-        public DateTime paid { get; set; }
-        public DateTime canceled { get; set; }
-    }
-
     public class OrderPaymentDTO
     {
-        public string status { get; set; }
-        public OrderPaymentDetailStatusDTO detailStatus { get; set; }
         public string method { get; set; }
-        public string bank { get; set; }
+        public double total { get; set; }
     }
 
-    public class OrderProduct
+    public class OrderProductDTO
     {
         public string id { get; set; }
         public int quantity { get; set; }
+        public double price { get; set; }
+        public double total { get; set; }
     }
 
-    public class OrderOrderProductDTO
+    public class OrderStoreDTO
     {
         public string storeId { get; set; }
-        public string storePickupPoint { get; set; }
-        public OrderProduct product { get; set; }
+        public IEnumerable<OrderProductDTO> products { get; set; }
     }
 
     public class OrderDTO
@@ -39,6 +31,6 @@ namespace API.DTO.Order
         public string date { get; set; }
         public string buyerId { get; set; }
         public OrderPaymentDTO payment { get; set; }
-        public IEnumerable<OrderOrderProductDTO> product { get; set; }
+        public IEnumerable<OrderStoreDTO> stores { get; set; }
     }
 }

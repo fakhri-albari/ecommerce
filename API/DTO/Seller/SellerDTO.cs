@@ -1,4 +1,7 @@
-﻿namespace API.DTO.Seller
+﻿using System;
+using System.Collections.Generic;
+
+namespace API.DTO.Seller
 {
     public class SellerDTO
     {
