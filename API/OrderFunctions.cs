@@ -15,6 +15,7 @@ using Microsoft.Azure.Cosmos;
 using DAL.Models;
 using DAL;
 using BLL;
+using System.Net.Http;
 
 namespace API
 {
@@ -85,6 +86,34 @@ namespace API
             log.LogWarning($"Payment Status: {result.payment.status}");
             log.LogWarning(" ");
             return new OkObjectResult(result);
+        }
+
+        [FunctionName("UpdateOrderStatus")]
+        [OpenApiOperation(operationId: "UpdateOrderStatus", tags: new[] { "Order" })]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UpdateOrderStatus), Description = "Order Status data want to be updated", Required = true)]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(Order), Description = "The OK response")]
+        public async Task<IActionResult> UpdateOrderStatus(
+            [HttpTrigger(AuthorizationLevel.Function, "put", Route = "order/status")] HttpRequest req,
+            ILogger log)
+        {
+            string requestBody = new StreamReader(req.Body).ReadToEnd();
+            UpdateOrderStatus updateOrderStatus = JsonConvert.DeserializeObject<UpdateOrderStatus>(requestBody);
+            var orderSvc = new OrderServices(new Repositories.OrderRepository(_client));
+            var resultOrder = await orderSvc.UpdateOrderStatus(updateOrderStatus);
+
+            var orderBuyerSvc = new OrderBuyerServices(new Repositories.OrderBuyerRepository(_client));
+            var resultBuyer = await orderBuyerSvc.UpdateOrderStatus(updateOrderStatus);
+
+            var orderStoreSvc = new OrderStoreServices(new Repositories.OrderStoreRepository(_client));
+            var resultStore = await orderSvc.UpdateOrderStatus(updateOrderStatus);
+
+            log.LogWarning(" ");
+            log.LogWarning("=== Order Status Updated ===");
+            log.LogWarning($"Order ID      : {resultOrder.Id}");
+            log.LogWarning($"Store ID      : {updateOrderStatus.storeId}");
+            log.LogWarning($"Status        : {updateOrderStatus.status}");
+            log.LogWarning(" ");
+            return new OkObjectResult(resultOrder);
         }
     }
 }

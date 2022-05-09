@@ -27,5 +27,21 @@ namespace BLL
             await _repo.UpdateAsync(orderId, order);
             return order;
         }
+
+        public async Task<Order> UpdateOrderStatus(UpdateOrderStatus orderStatus)
+        {
+            Order order = await _repo.GetByIdAsync(orderStatus.id);
+            foreach (var store in order.stores)
+            {
+                if (store.storeId == orderStatus.storeId)
+                {
+                    store.status = orderStatus.status;
+                    store.detailStatus = orderStatus.detailStatus;
+                    break;
+                }
+            }
+            await _repo.UpdateAsync(orderStatus.id, order);
+            return order;
+        }
     }
 }

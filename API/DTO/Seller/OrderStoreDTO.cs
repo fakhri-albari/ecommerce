@@ -1,6 +1,6 @@
 ﻿namespace API.DTO.Seller
 {
-    public class OrderSellerProductDTO
+    public class OrderStoreDTO
     {
     }
 }

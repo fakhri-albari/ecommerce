@@ -1,22 +1,13 @@
-﻿using Newtonsoft.Json;
-using Nexus.Base.CosmosDBRepository;
+﻿using DAL.Models;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
-namespace DAL.Models
+namespace API.DTO.Buyer
 {
-    public class Store
+    public class OrderBuyerDTO
     {
-
-        [JsonProperty("name")]
-        public string name { get; set; }
-
-        [JsonProperty("information")]
-        public string information { get; set; }
-    }
-
-    public class OrderStoreBase : ModelBase
-    {
+        public string id { get; set; }
         public string orderId { get; set; }
         public string address { get; set; }
         public string contact { get; set; }
@@ -25,6 +16,6 @@ namespace DAL.Models
         public string storeId { get; set; }
         public IEnumerable<OrderProduct> products { get; set; }
         public string status { get; set; }
-        public OrderDetailStatus orderDetailStatus { get; set; }
+        public OrderDetailStatus orderSellerDetailStatus { get; set; }
     }
 }

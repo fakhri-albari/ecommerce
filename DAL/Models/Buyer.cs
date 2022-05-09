@@ -1,21 +1,21 @@
-﻿using Newtonsoft.Json;
-using Nexus.Base.CosmosDBRepository;
+﻿using Nexus.Base.CosmosDBRepository;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace DAL.Models
 {
-    public class Store
+    public class Buyer : ModelBase
     {
-
-        [JsonProperty("name")]
         public string name { get; set; }
-
-        [JsonProperty("information")]
-        public string information { get; set; }
+        public string phone { get; set; }
+        public string email { get; set; }
+        public string password { get; set; }
+        public DateTime birthOfDate { get; set; }
+        public string registrationDate { get; set; }
     }
 
-    public class OrderStoreBase : ModelBase
+    public class OrderBuyerBase : ModelBase
     {
         public string orderId { get; set; }
         public string address { get; set; }

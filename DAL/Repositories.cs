@@ -47,5 +47,21 @@ namespace DAL
 
             }
         }
+
+        public class BuyerRepository : DocumentDBRepository<Buyer>
+        {
+            public BuyerRepository(CosmosClient client) : base("Buyer", client, partitionProperties: "registrationDate")
+            {
+
+            }
+        }
+
+        public class OrderBuyerRepository : DocumentDBRepository<OrderBuyerBase>
+        {
+            public OrderBuyerRepository(CosmosClient client) : base("Buyer", client, partitionProperties: "buyerId")
+            {
+
+            }
+        }
     }
 }

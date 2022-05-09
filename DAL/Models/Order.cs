@@ -47,6 +47,15 @@ namespace DAL.Models
         public OrderDetailStatus detailStatus { get; set; }
     }
 
+    public class UpdateOrderStatus
+    {
+        public string id { get; set; }
+        public string date { get; set; }
+        public string storeId { get; set; }
+        public string status { get; set; }
+        public OrderDetailStatus detailStatus { get; set; }
+    }
+
     public class Order : ModelBase
     {
         public string address { get; set; }

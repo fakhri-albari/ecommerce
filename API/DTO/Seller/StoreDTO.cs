@@ -6,21 +6,12 @@ namespace API.DTO.Seller
 {
     public class StoreDTO
     {
+        public string id { get; set; }
         public string name { get; set; }
         public string information { get; set; }
     }
 
-    public class OrderStoreDetailStatusDTO
-    {
-        public DateTime? waitForSeller { get; set; }
-        public DateTime? processed { get; set; }
-        public DateTime? delivered { get; set; }
-        public DateTime? arrived { get; set; }
-        public DateTime? finished { get; set; }
-        public DateTime? rejected { get; set; }
-    }
-
-    public class OrderStoreDTO
+    public class OrderStoreBaseDTO
     {
         public string orderId { get; set; }
         public string address { get; set; }
@@ -28,8 +19,8 @@ namespace API.DTO.Seller
         public string date { get; set; }
         public string buyerId { get; set; }
         public string storeId { get; set; }
-        public IEnumerable<OrderStoreProduct> products { get; set; }
+        public IEnumerable<OrderProduct> products { get; set; }
         public string status { get; set; }
-        public OrderStoreDetailStatusDTO orderSellerDetailStatus { get; set; }
+        public OrderDetailStatus orderSellerDetailStatus { get; set; }
     }
 }

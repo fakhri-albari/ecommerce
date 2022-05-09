@@ -32,6 +32,7 @@ namespace API
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<OrderPayment, Payment>();
+                cfg.CreateMap<OrderBuyerBase, OrderStoreBase>();
             });
             _mapper = config.CreateMapper();
         }
@@ -42,7 +43,7 @@ namespace API
             ILogger log)
         {
             var exceptions = new List<Exception>();
-            Payment payment = new Payment();
+            Payment payment;
             foreach (EventData eventData in events)
             {
                 try
@@ -69,6 +70,49 @@ namespace API
                             Order data = JsonConvert.DeserializeObject<Order>(content);
                             if(data.payment.status == "paid")
                             {
+                                // create OrderBuyer
+                                // mapping from Order to OrderBuyerBase
+                                foreach (OrderStore orderBuyer in data.stores)
+                                {
+                                    string orderBuyerId = data.Id + orderBuyer.storeId;
+                                    OrderBuyerBase orderBuyerBase = new OrderBuyerBase
+                                    {
+                                        Id = orderBuyerId,
+                                        orderId = data.Id,
+                                        address = data.address,
+                                        contact = data.contact,
+                                        date = data.date,
+                                        buyerId = data.buyerId,
+                                        storeId = orderBuyer.storeId,
+                                        products = orderBuyer.products,
+                                        status = "waitForSeller",
+                                        orderDetailStatus = new OrderDetailStatus
+                                        {
+                                            waitForSeller = DateTime.Now
+                                        }
+                                    };
+                                    OrderStoreBase orderStoreBase = _mapper.Map<OrderStoreBase>(orderBuyerBase);
+                                    UpdateOrderStatus updateOrderStatus = new UpdateOrderStatus
+                                    {
+                                        id = orderBuyerBase.orderId,
+                                        date = orderBuyerBase.date,
+                                        storeId = orderBuyerBase.storeId,
+                                        status = orderBuyerBase.status,
+                                        detailStatus = orderBuyerBase.orderDetailStatus
+                                    };
+                                    var orderSvc = new OrderServices(new Repositories.OrderRepository(_client));
+                                    var orderBuyerSvc = new OrderBuyerServices(new Repositories.OrderBuyerRepository(_client));
+                                    var orderStoreSvc = new OrderStoreServices(new Repositories.OrderStoreRepository(_client));
+                                    var resultBuyer = await orderBuyerSvc.CreateOrderBuyer(orderBuyerBase);
+                                    var resultStore = await orderStoreSvc.CreateOrderStore(orderStoreBase);
+                                    await orderSvc.UpdateOrderStatus(updateOrderStatus);
+
+                                    log.LogWarning(" ");
+                                    log.LogWarning("=== OrderBuyer and OrderStore Created ===");
+                                    log.LogWarning("Buyer and Store got order data");
+                                    log.LogWarning(" ");
+                                }
+                                // create order store
                                 log.LogWarning(" ");
                                 log.LogWarning("Seller got order notification");
                                 log.LogWarning(" ");
